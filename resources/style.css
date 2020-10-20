@@ -35,15 +35,16 @@ green: #00A388
 body {
   margin: 0;
   overflow: hidden;
+  background: white;
 }
 #container {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: 1rem;
   display: flex;
-  flex-flow: column;
+  flex-flow: column;  
 }
 h1, p {
   padding: 0;

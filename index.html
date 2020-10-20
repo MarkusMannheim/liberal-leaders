@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-155991615-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag("js", new Date());
+      gtag("config", "UA-155991615-1");
+    </script>
+    <!-- my stuff -->
+    <meta charset="utf-8">
+    <title>Canberra Liberals performance</title>
+    <meta name="description" content="How the Liberals performed at ACT elections under different leaders.">
+    <meta name="keywords" content="act, election, actvotes, leaders, liberal, canberra">
+    <meta name="author" content="Markus Mannheim">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <link href="./resources/style.css" rel="stylesheet">
+    <link href="./resources/abcLogo64.png" rel="icon">
+  </head>
+  <body>
+    <!-- initial layout -->
+    <div id="container">
+      <div id="description">Canberra Liberals' first-preference votes</div>
+      <div id="chart"></div>
+      <div id="footer">DATA: ACT ELECTORAL COMMISSION, IMAGES: WIKIPEDIA</div>
+    </div>
+    <script>
+      // load data
+      d3.csv("./data/libVotes.csv", function(error, data) {
+        if (error) throw error;
+        // format data
+        votes = data
+          .map(function(d) {
+            d.primary = +d.primary;
+            return d;
+          });
+        // page elements
+        chart = d3.select("#chart");
+        // draw chart
+        window.addEventListener("resize", resize);
+        chart.transition()
+          .duration(500)
+          .style("opacity", 1)
+          .on("end", prepareChart);
+      });
+      function prepareChart() {
+        x = d3.scaleLinear()
+          .domain([0, 50]);
+          // .domain([0, d3.max(votes, function(d) { return d.primary; })]).nice();
+        y = d3.scaleBand()
+          .domain(votes.map(function(d) { return d.year; }))
+          .paddingOuter(0)
+          .paddingInner(.15);
+        years = chart
+          .selectAll(".year")
+            .data(votes)
+          .enter().append("div")
+            .classed("year", true);
+        results = years
+          .append("div")
+            .classed("result", true);
+        heads = results
+          .append("div")
+            .classed("headshot", true)
+            .style("background-image", function(d) { return "url('./data/" + d.leader.toLowerCase().replace(" ", "") + ".jpg')"; });
+        yearLabels = results
+          .append("div")
+            .classed("yearLabel", true)
+            .text(function(d) { return d.year; });
+        labels = results
+          .append("div")
+            .classed("label", true)
+            .text(function(d) { return d.leader; });
+        counts = years
+          .append("div")
+            .classed("count", true)
+            .text(function(d) { return d3.format(".1%")(d.primary / 100); });
+        resize();
+      }
+      function resize() {
+        let dimensions = document.getElementById("chart").getBoundingClientRect();
+        width = dimensions.width;
+        height = dimensions.height;
+        y.range([0, height]);
+        x.range([0, width]);
+        years.style("height", y.bandwidth() + "px");
+        years.style("width", "0%")
+          .transition()
+            .duration(500)
+            .style("width", "100%");
+        results.style("width", "0px")
+          .transition()
+            .duration(500)
+            .style("width", function(d) { return x(d.primary) + "px"; });
+        d3.selectAll(".yearLabel, .label, .count").style("line-height", y.bandwidth() + "px");
+        heads.style("width", y.bandwidth() + "px");
+      }
+    </script>
+  </body>
+</html>
